@@ -10,6 +10,7 @@
 # @attr [Bots::Permissions] permission    Permission of bot.
 class Bot < ActiveRecord::Base
   SCRIPT_TIMEOUT = 1000
+  class V8ContextException < StandardError; end
 
   after_create :create_default_storage
   before_save :set_channel_id
@@ -35,10 +36,13 @@ class Bot < ActiveRecord::Base
   def execute_function(function, arguments: [])
     GC.disable
     cxt = V8::Context.new(timeout: SCRIPT_TIMEOUT)
+    raise V8ContextException.new unless cxt.native
     cxt['api'] = Bots::API.new(self)
     cxt.eval modules_imported_script
     cxt['bot_function_params'] = arguments
     cxt.eval("#{function}.apply(this, bot_function_params)").to_s
+  rescue V8ContextException
+    reload_v8!
   rescue => e
     update_column(:current_error, "#{Time.zone.now} - #{e.to_s}")
     nil
@@ -111,6 +115,14 @@ class Bot < ActiveRecord::Base
       scripts.concat bot_modules.usable(self).map(&:script)
       scripts.push self.script
     }.join('')
+  end
+
+  # Reload V8
+  # @note very very very uncool!
+  def reload_v8!
+    Object.send(:remove_const, :V8)
+    $".delete_if {|m| m.include?('v8')}
+    require 'v8'
   end
 
   # Set channel id.
