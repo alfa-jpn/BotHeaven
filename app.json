@@ -30,6 +30,11 @@
       "description": "visit https://slack.com/services/new/bot and input here",
       "value": ""
     },
+    "PRIVATE_MODE": {
+      "description": "require login mode (0: disabled, 1: enabled)",
+      "value": "",
+      "required": false
+    },
     "SECRET_KEY_BASE": {
       "description": "Any encryption key",
       "generator": "secret"

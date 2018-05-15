@@ -1,6 +1,7 @@
 class SessionsController < ApplicationController
   before_action :require_auth!, only: [:create]
   before_action :authenticated!, only: [:destroy]
+  skip_before_action :require_login_in_private
 
   def new
     redirect_to '/auth/slack'
