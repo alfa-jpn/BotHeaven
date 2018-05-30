@@ -131,6 +131,6 @@ EOS
   # Hook Parameters.
   # @return [Hash<String,String>] Hash of Bot Hook.
   def hook_params
-    params.except(:id, :action, :controller).to_h.each_with_object({}){|(k,v),p| p[k] = v.to_s}
+    params.except(:id, :action, :controller).to_unsafe_h
   end
 end

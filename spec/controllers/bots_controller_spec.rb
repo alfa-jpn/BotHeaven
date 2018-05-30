@@ -102,7 +102,7 @@ RSpec.describe BotsController, type: :controller do
 
   describe "GET #hook" do
     subject do
-      get :hook, params: {id: bot.to_param}
+      get :hook, params: {id: bot.to_param, original_param: 123}
       response
     end
 
@@ -111,6 +111,7 @@ RSpec.describe BotsController, type: :controller do
     end
 
     it 'Enqueue bot job' do
+      expect(JobDaemons::BotJob).to receive(:new).with(bot.id, 'onHook', ['GET', {'original_param' => '123'}]).once
       expect(JobDaemon).to receive(:enqueue).once
       subject
     end
@@ -118,7 +119,7 @@ RSpec.describe BotsController, type: :controller do
 
   describe "POST #hook" do
     subject do
-      post :hook, params: {id: bot.to_param}
+      post :hook, params: {id: bot.to_param, original_param: {item: ['ruby']}}
       response
     end
 
@@ -127,6 +128,7 @@ RSpec.describe BotsController, type: :controller do
     end
 
     it 'Enqueue bot job' do
+      expect(JobDaemons::BotJob).to receive(:new).with(bot.id, 'onHook', ['POST', {'original_param' => {'item' => ['ruby']}}]).once
       expect(JobDaemon).to receive(:enqueue).once
       subject
     end
